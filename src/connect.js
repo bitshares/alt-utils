@@ -33,7 +33,7 @@ function connect(Spec, MaybeComponent) {
         this.state = Spec.reduceProps(props, context)
       }
 
-      componentWillMount() {
+      UNSAFE_componentWillMount() {
         if (Spec.willMount) Spec.willMount(this.props, this.context)
       }
 

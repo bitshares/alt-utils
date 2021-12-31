@@ -19,9 +19,9 @@ export default {
       })
     }
 
-    Iso.bootstrap((state, meta, node) => {
+    Iso.bootstrap((state, node, key) => {
       alt.bootstrap(state)
-      Render.toDOM(Component, props, node, meta.iso)
+      Render.toDOM(Component, props, node, key)
     })
     return Promise.resolve()
   },

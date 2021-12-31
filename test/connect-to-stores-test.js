@@ -1,4 +1,5 @@
-import { jsdom } from 'jsdom'
+import jsdom from 'jsdom'
+const { JSDOM } = jsdom;
 import Alt from 'alt'
 import React from 'react'
 import PropTypes from 'prop-types';
@@ -7,7 +8,7 @@ import ReactDomServer from 'react-dom/server'
 import connectToStores from '../src/connectToStores'
 import { assert } from 'chai'
 import sinon from 'sinon'
-import TestUtils from 'react-addons-test-utils'
+import TestUtils from 'react-dom/test-utils'
 
 const alt = new Alt()
 
@@ -28,7 +29,8 @@ const testStore = alt.createStore(
 export default {
   'connectToStores wrapper': {
     beforeEach() {
-      global.document = jsdom('<!doctype html><html><body></body></html>')
+      const { document } = (new JSDOM('<!doctype html><html><body></body></html>')).window
+      global.document = document
       global.window = global.document.defaultView
 //      require('react/lib/ExecutionEnvironment').canUseDOM = true
 

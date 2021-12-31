@@ -1,4 +1,6 @@
 import React from 'react'
+import { render } from 'react-dom'
+import * as ReactServer from 'react-dom/server'
 import PropTypes from 'prop-types';
 
 export function withData(fetch, MaybeComponent) {
@@ -12,7 +14,7 @@ export function withData(fetch, MaybeComponent) {
         return { buffer: this.context.buffer }
       }
 
-      componentWillMount() {
+      UNSAFE_componentWillMount() {
         if (!this.context.buffer.locked) {
           this.context.buffer.push(
             fetch(this.props)
@@ -119,7 +121,8 @@ function renderWithStrategy(strategy) {
 
     // create a buffer and use context to pass it through to the components
     const buffer = new DispatchBuffer((Node) => {
-      return React[strategy](Node)
+      // return React[strategy](Node)
+      return ReactServer[strategy](Node)
     })
     const Container = usingDispatchBuffer(buffer, Component)
 
@@ -141,7 +144,7 @@ export function toDOM(Component, props, documentNode, shouldLock) {
   const Node = usingDispatchBuffer(buffer, Component)
   const Element = React.createElement(Node, props)
   buffer.clear()
-  return React.render(Element, documentNode)
+  return render(Element, documentNode)
 }
 
 export const toStaticMarkup = renderWithStrategy('renderToStaticMarkup')

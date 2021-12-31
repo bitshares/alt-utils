@@ -60,7 +60,7 @@ class ReactComponent {
         ? component.getInitialState()
         : {}
 
-      component.componentWillMount && component.componentWillMount();
+      component.UNSAFE_componentWillMount && component.UNSAFE_componentWillMount();
       component.componentDidMount && component.componentDidMount();
 
       testFn && testFn();

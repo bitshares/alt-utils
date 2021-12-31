@@ -74,7 +74,7 @@ function connectToStores(Spec, Component = Spec) {
       this.onChange = this.onChange.bind(this)
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
       this.setState(Spec.getPropsFromStores(nextProps, this.context))
     }
 

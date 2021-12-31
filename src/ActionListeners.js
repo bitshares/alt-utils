@@ -17,7 +17,7 @@
  * ```
  */
 
-import { isFunction } from './functions';
+import * as fn from './functions';
 
 function ActionListeners(alt) {
   this.dispatcher = alt.dispatcher
@@ -29,7 +29,7 @@ function ActionListeners(alt) {
  * Adds a listener to a specified action and returns the dispatch token.
  */
 ActionListeners.prototype.addActionListener = function addActionListener(symAction, handler) {
-  if (!isFunction(handler)) {
+  if (!fn.isFunction(handler)) {
     throw new Error('addActionListener() expects a function as the second argument')
   }
 
