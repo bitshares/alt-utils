@@ -1,11 +1,12 @@
-import { jsdom } from 'jsdom'
+import jsdom from 'jsdom'
+const { JSDOM } = jsdom;
 import Alt from 'alt'
 import React from 'react'
-import AltContainer from 'alt/AltContainer'
+import AltContainer from 'alt-container'
 import withAltContext from '../src/withAltContext'
 import { assert } from 'chai'
 import sinon from 'sinon'
-import TestUtils from 'react-addons-test-utils'
+import TestUtils from 'react-dom/test-utils'
 import ReactDom from 'react-dom'
 
 const alt = new Alt()
@@ -40,6 +41,11 @@ const Store2 = alt.createStore({
   }
 })
 
+function getDOMComponentProps(component) {
+  const k = Object.keys(component).find((key) => key.startsWith('__reactProps'))
+  return component[k]
+}
+
 class Flux extends Alt {
   constructor() {
     super()
@@ -65,7 +71,8 @@ class Flux extends Alt {
 export default {
   'AltContainer': {
     beforeEach() {
-      global.document = jsdom('<!doctype html><html><body></body></html>')
+      const { document } = (new JSDOM('<!doctype html><html><body></body></html>')).window
+      global.document = document
       global.window = global.document.defaultView
 
       alt.recycle()
@@ -100,18 +107,18 @@ export default {
 
     'element has correct state'() {
       const node = TestUtils.renderIntoDocument(
-        <AltContainer stores={{ TestStore }}>
+        <AltContainer stores={{ teststore:TestStore }}>
           <div />
         </AltContainer>
       )
 
       action.sup('hello')
 
-      assert(node.state.TestStore.x === 'hello')
+      assert(node.state.teststore.x === 'hello')
 
       action.sup('bye')
 
-      assert(node.state.TestStore.x === 'bye')
+      assert(node.state.teststore.x === 'bye')
     },
 
     'works with context'() {
@@ -158,7 +165,7 @@ export default {
       const node = TestUtils.renderIntoDocument(<WrappedComponent />)
       const span = TestUtils.findRenderedDOMComponentWithTag(node, 'span')
 
-      assert.instanceOf(span.props.flux, Flux)
+      assert.instanceOf(getDOMComponentProps(span).flux, Flux)
     },
 
     'works with instances and props'() {
@@ -184,7 +191,7 @@ export default {
 
       const span = TestUtils.findRenderedDOMComponentWithTag(node, 'span')
 
-      assert.instanceOf(span.props.flux, Flux)
+      assert.instanceOf(getDOMComponentProps(span).flux, Flux)
     },
 
     'flux prop works with the transform function'() {
@@ -212,14 +219,14 @@ export default {
       const div  = TestUtils.scryRenderedDOMComponentsWithTag(node, 'div')[0]
       const span = TestUtils.findRenderedDOMComponentWithTag(node, 'span')
 
-      assert(div.props.flx === flux)
-      assert.isUndefined(span.props.flx)
-      assert(span.props.flux === flux)
+      assert(getDOMComponentProps(div).flx === flux)
+      assert.isUndefined(getDOMComponentProps(span).flx)
+      assert(getDOMComponentProps(span).flux === flux)
     },
 
     'children get the state via props'() {
       const node = TestUtils.renderIntoDocument(
-        <AltContainer stores={{ TestStore }}>
+        <AltContainer stores={{ teststore:TestStore }}>
           <span />
         </AltContainer>
       )
@@ -228,12 +235,12 @@ export default {
 
       const span = TestUtils.findRenderedDOMComponentWithTag(node, 'span')
 
-      assert(span.props.TestStore.x === 'foobar')
+      assert(getDOMComponentProps(span).teststore.x === 'foobar')
     },
 
     'many children get state via props'() {
       const node = TestUtils.renderIntoDocument(
-        <AltContainer stores={{ TestStore }}>
+        <AltContainer stores={{ teststore:TestStore }}>
           <span />
           <strong />
           <em />
@@ -246,22 +253,22 @@ export default {
       const strong = TestUtils.findRenderedDOMComponentWithTag(node, 'strong')
       const em = TestUtils.findRenderedDOMComponentWithTag(node, 'em')
 
-      assert(span.props.TestStore.x === 'foobar')
-      assert(strong.props.TestStore.x === 'foobar')
-      assert(em.props.TestStore.x === 'foobar')
+      assert(getDOMComponentProps(span).teststore.x === 'foobar')
+      assert(getDOMComponentProps(strong).teststore.x === 'foobar')
+      assert(getDOMComponentProps(em).teststore.x === 'foobar')
     },
 
     'passing in other props'() {
       const node = TestUtils.renderIntoDocument(
-        <AltContainer className="no" stores={{ TestStore }}>
+        <AltContainer className="no" stores={{ teststore:TestStore }}>
           <div className="hello" />
         </AltContainer>
       )
 
       const div = TestUtils.findRenderedDOMComponentWithTag(node, 'div')
 
-      assert(div.props.className === 'hello')
-      assert.isUndefined(div.props.stores)
+      assert(getDOMComponentProps(div).className === 'hello')
+      assert.isUndefined(getDOMComponentProps(div).stores)
     },
 
     'does not wrap if it does not have to'() {
@@ -293,7 +300,7 @@ export default {
 
       action.sup('just testing')
 
-      assert(span.props.x === 'just testing')
+      assert(getDOMComponentProps(span).x === 'just testing')
     },
 
     'pass in single function'() {
@@ -309,7 +316,7 @@ export default {
       )
       const span = TestUtils.findRenderedDOMComponentWithTag(node, 'span')
 
-      assert(span.props.x === 'jesting')
+      assert(getDOMComponentProps(span).x === 'jesting')
     },
 
     'function is called with props'() {
@@ -357,8 +364,8 @@ export default {
       )
       const span = TestUtils.findRenderedDOMComponentWithTag(node, 'span')
 
-      assert(span.props.x.a === 'hello')
-      assert(span.props.y.b === 'goodbye')
+      assert(getDOMComponentProps(span).x.a === 'hello')
+      assert(getDOMComponentProps(span).y.b === 'goodbye')
     },
 
     'nested components pass down flux'() {
@@ -372,7 +379,7 @@ export default {
       )
       const span = TestUtils.findRenderedDOMComponentWithTag(node, 'span')
 
-      assert.instanceOf(span.props.flux, Flux)
+      assert.instanceOf(getDOMComponentProps(span).flux, Flux)
     },
 
     'custom rendering'() {
@@ -386,16 +393,16 @@ export default {
 
       const node = TestUtils.renderIntoDocument(
         <AltContainer
-          stores={{TestStore}}
+          stores={{teststore:TestStore}}
           render={(props) => {
-            assert.isDefined(props.TestStore, 'test store exists in props')
+            assert.isDefined(props.teststore, 'test store exists in props')
             return <span className="testing testing" />
           }}
         />
       )
       const span = TestUtils.findRenderedDOMComponentWithTag(node, 'span')
 
-      assert(span.props.className === 'testing testing')
+      assert(getDOMComponentProps(span).className === 'testing testing')
     },
 
     'define both stores and store'() {
@@ -439,16 +446,16 @@ export default {
 
     'inject actions'() {
       const node = TestUtils.renderIntoDocument(
-        <AltContainer actions={{ MyActions: action }}>
+        <AltContainer actions={{ myactions: action }}>
           <span />
         </AltContainer>
       )
 
       const span = TestUtils.findRenderedDOMComponentWithTag(node, 'span')
 
-      assert.isObject(span.props.MyActions, 'MyActions exist')
-      assert(span.props.MyActions === action, 'MyActions is injected actions')
-      assert.isFunction(span.props.MyActions.sup, 'sup action is available')
+      assert.isObject(getDOMComponentProps(span).myactions, 'myactions exist')
+      assert(getDOMComponentProps(span).myactions === action, 'myactions is injected actions')
+      assert.isFunction(getDOMComponentProps(span).myactions.sup, 'sup action is available')
     },
 
     'inject all actions directly shorthand'() {
@@ -460,14 +467,14 @@ export default {
 
       const span = TestUtils.findRenderedDOMComponentWithTag(node, 'span')
 
-      assert.isFunction(span.props.sup, 'sup is available directly on the props')
+      assert.isFunction(getDOMComponentProps(span).sup, 'sup is available directly on the props')
     },
 
     'inject all actions using a function'() {
       const node = TestUtils.renderIntoDocument(
         <AltContainer actions={function (props) {
           return {
-            FooActions: {
+            fooactions: {
               sup: action.sup.bind(action)
             }
           }
@@ -478,8 +485,8 @@ export default {
 
       const span = TestUtils.findRenderedDOMComponentWithTag(node, 'span')
 
-      assert.isObject(span.props.FooActions, 'actions are injected')
-      assert.isFunction(span.props.FooActions.sup, 'sup is available')
+      assert.isObject(getDOMComponentProps(span).fooactions, 'actions are injected')
+      assert.isFunction(getDOMComponentProps(span).fooactions.sup, 'sup is available')
     },
 
     'scu'() {
@@ -493,7 +500,7 @@ export default {
 
       action.sup()
       assert.ok(scu.calledOnce, 'custom shouldComponentUpdate was called')
-      assert(scu.args[0].length === 1, 'only one arg is passed, the props')
+      assert(scu.args.length === 1, 'only one arg is passed, the props')
       assert.isDefined(scu.args[0][0].x, 'x prop exists')
     },
 
@@ -511,12 +518,12 @@ export default {
 
       const span = TestUtils.findRenderedDOMComponentWithTag(node, 'span')
 
-      assert(span.props.className === 'foo', 'you can inject custom things')
-      assert.isDefined(span.props.foo.x, 'functions are ran')
+      assert(getDOMComponentProps(span).className === 'foo', 'you can inject custom things')
+      assert.isDefined(getDOMComponentProps(span).foo.x, 'functions are ran')
 
       action.sup(888)
 
-      assert(span.props.foo.x === 888, 'when passing stores as Array they are just listened on')
+      assert(getDOMComponentProps(span).foo.x === 888, 'when passing stores as Array they are just listened on')
     },
 
     'passing in a component as a prop'() {
@@ -535,7 +542,7 @@ export default {
       action.sup(1337)
 
       assert.isDefined(strong, 'component exists')
-      assert(strong.props.x === 1337, 'and we have props from TestStore')
+      assert(getDOMComponentProps(strong).x === 1337, 'and we have props from TestStore')
     },
 
     'nested components and context'() {
@@ -578,7 +585,7 @@ export default {
       const node = TestUtils.renderIntoDocument(<App />)
       const span = TestUtils.findRenderedDOMComponentWithTag(node, 'span')
 
-      assert.instanceOf(span.props.flux, Flux)
+      assert.instanceOf(getDOMComponentProps(span).flux, Flux)
 
       assert.ok(foo.calledOnce, 'onMount hook was called')
     },

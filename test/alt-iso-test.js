@@ -1,6 +1,6 @@
 import React from 'react'
 import Alt from 'alt'
-import AltContainer from 'alt/AltContainer'
+import AltContainer from 'alt-container'
 import AltIso from '../src/AltIso'
 import { assert } from 'chai'
 

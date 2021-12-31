@@ -1,12 +1,13 @@
-import { jsdom } from 'jsdom'
+import jsdom from 'jsdom'
+const { JSDOM } = jsdom;
 import React, { Component } from 'react'
 import Alt from 'alt'
-import AltContainer from 'alt/AltContainer'
+import AltContainer from 'alt-container'
 import AltIso from '../src/AltIso'
 import * as Render from '../src/Render'
 import connectToStores from '../src/connectToStores'
 import { assert } from 'chai'
-import TestUtils from 'react-addons-test-utils'
+import TestUtils from 'react-dom/test-utils'
 
 const alt = new Alt()
 
@@ -132,9 +133,8 @@ export default {
 
     'browser requests'(done) {
       AltIso.render(alt, App, { id: 0, name: 'Z' }).then((obj) => {
-        global.document = jsdom(
-          `<!doctype html><html><body>${obj.html}</body></html>`
-        )
+        const { document } = (new JSDOM(`<!doctype html><html><body>${obj.html}</body></html>`)).window
+        global.document = document
         global.window = global.document.defaultView
       }).then(() => {
         return AltIso.render(alt, App, { id: 0, name: 'Z' })
@@ -148,7 +148,8 @@ export default {
     },
 
     'works with connectToStores'(done) {
-      global.document = jsdom('<!doctype html><html><body></body></html>')
+      const { document } = (new JSDOM('<!doctype html><html><body></body></html>')).window
+      global.document = document
       global.window = global.document.defaultView
 
       const alt = new Alt()
